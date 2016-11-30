@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import math
 
 
 
@@ -14,6 +15,10 @@ def main():
 
 def q2():
     data = np.loadtxt('./circledata.csv', delimiter=',')
+    # data = np.loadtxt('./fisher.csv', delimiter=',')
+    # data = data[:, 2:]
+    # labels = np.vstack((np.ones((50, 1)), -1*np.ones((100, 1))))
+    # data = np.hstack((data, labels))
     data = np.hstack((np.ones((data.shape[0], 1)), data))
 
     '''
@@ -50,8 +55,60 @@ def q2():
     print('Primal and Dual Classifications equal?: ' + str(equal))
 
     '''
-    PART B
+    PART B, Gaussian kernel
     '''
+    kij = lambda xi, xj: math.exp((-.5)*(np.linalg.norm(xi - xj)**2))
+    #Build Gaussian kernel matrix for each pair of entries in matrix X.
+    K = np.zeros((X.shape[0], X.shape[0]))
+    for i in range(0, X.shape[0]):
+        for j in range(0, X.shape[0]):
+            K[i, j] = kij(X[i], X[j])
+
+    alpha = np.linalg.inv(K + lambdaParam * np.eye(K.shape[0], K.shape[1])).dot(y)
+    gaussianKernelPredicted = []
+    for x in X:
+        sumTerm = 0
+        for i in range(0, X.shape[0]):
+            sumTerm += kij(x, X[i]) * alpha[i]
+        gaussianKernelPredicted.append(np.sign(sumTerm))
+    gaussianKernelAccuracy = calculateAccuracy(y, gaussianKernelPredicted)
+    print('Linear Kernel Accuracy: %.10f' % originalLSAccuracy)
+    print('Gaussian Kernel Accuracy: %.10f' % gaussianKernelAccuracy)
+
+    '''
+    PART C, quadratic kernel
+    '''
+    kij = lambda xi, xj: (np.dot(xi, xj) + 1)**2
+    #Build Gaussian kernel matrix for each pair of entries in matrix X.
+    K = np.zeros((X.shape[0], X.shape[0]))
+    for i in range(0, X.shape[0]):
+        for j in range(0, X.shape[0]):
+            K[i, j] = kij(X[i], X[j])
+
+    alpha = np.linalg.inv(K + (lambdaParam * np.eye(K.shape[0], K.shape[1]) )).dot(y)
+    quadraticKernelPredicted = []
+    for x in X:
+        sumTerm = 0
+        for i in range(0, X.shape[0]):
+            sumTerm += ((np.dot(x, X[i]) + 1)**2)*alpha[i]
+            #sumTerm += kij(x, X[i]) * alpha[i]
+        quadraticKernelPredicted.append(np.sign(sumTerm))
+    quadraticKernelAccuracy = calculateAccuracy(y, quadraticKernelPredicted)
+    print('Quadratic Kernel Accuracy: %.10f' % quadraticKernelAccuracy)
+
+    temp = np.array(gaussianKernelPredicted)
+    plt.scatter(X[temp == 1, 1], X[temp == 1, 2], color='b')
+    plt.scatter(X[temp == -1, 1], X[temp == -1, 2], color='r')
+    plt.title('Gaussian kernel classification.')
+    plt.show()
+
+    temp = np.array(quadraticKernelPredicted)
+    plt.scatter(X[temp == 1, 1], X[temp == 1, 2], color='b')
+    plt.scatter(X[temp == -1, 1], X[temp == -1, 2], color='r')
+    plt.title('Quadratic kernel classification.')
+    plt.show()
+
+
 
     #C = 1/lambda for scikit-learn SVM
 
