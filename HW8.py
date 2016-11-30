@@ -26,35 +26,52 @@ def q1():
     reducedData = np.hstack((reducedData, np.ones((100, 1)), labels))
 
     #q1_pa(reducedData)
-    q1_pb(reducedData)
+    #q1_pb(reducedData)
+    #q1_pc(reducedData)
+
+'''
+wt convergence properties.
+'''
+def q1_pc(reducedData):
+    #Get w values for initial parameters.
+    w, wconvergence = trainSVM(reducedData, returnConvergence=True)
+    #Plot w1, w2, and w3
+    plt.scatter(list(range(0, len(wconvergence))), list(map(lambda row: row[0], wconvergence)), color='r')
+    plt.scatter(list(range(0, len(wconvergence))), list(map(lambda row: row[1], wconvergence)), color='g')
+    plt.scatter(list(range(0, len(wconvergence))), list(map(lambda row: row[2], wconvergence)), color='b')
+    plt.xlabel('Iteration')
+    plt.ylabel('w value')
+    plt.title('W convergence gamma=0.003')
+    plt.show()
+
+    #Get w values for gamma = 0.01
+    w, wconvergence = trainSVM(reducedData, gammaParam=0.01, returnConvergence=True)
+    plt.clf()
+    plt.scatter(list(range(0, len(wconvergence))), list(map(lambda row: row[0], wconvergence)), color='r')
+    plt.scatter(list(range(0, len(wconvergence))), list(map(lambda row: row[1], wconvergence)), color='g')
+    plt.scatter(list(range(0, len(wconvergence))), list(map(lambda row: row[2], wconvergence)), color='b')
+    plt.xlabel('Iteration')
+    plt.ylabel('w value')
+    plt.title('W convergence gamma=0.01')
+    plt.show()
+
+    # Get w values for gamma = 0.0001
+    w, wconvergence = trainSVM(reducedData, gammaParam=0.0001, returnConvergence=True)
+    plt.clf()
+    plt.scatter(list(range(0, len(wconvergence))), list(map(lambda row: row[0], wconvergence)), color='r')
+    plt.scatter(list(range(0, len(wconvergence))), list(map(lambda row: row[1], wconvergence)), color='g')
+    plt.scatter(list(range(0, len(wconvergence))), list(map(lambda row: row[2], wconvergence)), color='b')
+    plt.xlabel('Iteration')
+    plt.ylabel('w value')
+    plt.title('W convergence gamma=0.0001')
+    plt.show()
+
 
 '''
 Regularized SVM training with gradient descent.
 '''
 def q1_pb(reducedData):
-
-    # #Initialize w0 to 0 vector.
-    # w = np.zeros((3, 1))
-    # #Initialize learning parameters.
-    # lambdaParam = 0.1
-    # gammaParam = 0.003
-    #
-    # for t in range(0, 20000):
-    #     if t % 100 == 0:
-    #         print('Iteration %d' % t)
-    #     grad = 0
-    #     errorSumTerm = 0
-    #     for i in range(0, reducedData.shape[0]):
-    #         #Calculate summed error term over training examples.
-    #         errorSumTerm += -reducedData[i, -1]*reducedData[i, :-1].reshape((reducedData.shape[1]-1, 1)) * (.5*(1 + np.sign(1 - (reducedData[i, -1]*np.dot(reducedData[i, :-1], w)))))[0]
-    #     #Calculate regularization term.
-    #     wErrorTerm = 2*lambdaParam*w
-    #     wErrorTerm[-1, 0] = 0
-    #     #Calculate gradient.
-    #     grad = errorSumTerm + wErrorTerm
-    #     #Update w term.
-    #     w = w - (gammaParam*grad)
-
+    #Get w for data.
     w = trainSVM(reducedData)
 
     #Plot SVM line.
@@ -82,14 +99,12 @@ def q1_pb(reducedData):
     plt.legend(handles=[red_patch, blue_patch], loc=2)
     plt.show()
 
-def trainSVM(reducedData):
+def trainSVM(reducedData, lambdaParam = 0.1, gammaParam = 0.003, iterations=20000, returnConvergence=False):
     # Initialize w0 to 0 vector.
     w = np.zeros((3, 1))
-    # Initialize learning parameters.
-    lambdaParam = 0.1
-    gammaParam = 0.003
+    wconvgList = []
 
-    for t in range(0, 20000):
+    for t in range(0, iterations):
         if t % 100 == 0:
             print('Iteration %d' % t)
         grad = 0
@@ -105,8 +120,13 @@ def trainSVM(reducedData):
         grad = errorSumTerm + wErrorTerm
         # Update w term.
         w = w - (gammaParam * grad)
+        if returnConvergence:
+            wconvgList.append(w)
 
-    return w
+    if returnConvergence:
+        return w, wconvgList
+    else:
+        return w
 
 def q1_pa(reducedData):
     # Build LS classifier, and find w.
