@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import math
+import sklearn.svm as svm
 
 
 
@@ -100,21 +101,33 @@ def q2():
     plt.scatter(X[temp == 1, 1], X[temp == 1, 2], color='b')
     plt.scatter(X[temp == -1, 1], X[temp == -1, 2], color='r')
     plt.title('Gaussian kernel classification.')
-    plt.show()
+    #plt.show()
 
     temp = np.array(quadraticKernelPredicted)
     plt.scatter(X[temp == 1, 1], X[temp == 1, 2], color='b')
     plt.scatter(X[temp == -1, 1], X[temp == -1, 2], color='r')
     plt.title('Quadratic kernel classification.')
-    plt.show()
-
+    #plt.show()
 
 
     #C = 1/lambda for scikit-learn SVM
+    #Scikit-learn Gaussian Classifier
+    mSvm = svm.SVC(C=lambdaParam**-1, gamma=.5, kernel='rbf')
+    mSvm.fit(X, y)
+    svmGaussianPredictions = []
+    for x in X:
+        svmGaussianPredictions.append(mSvm.predict(x.reshape((1,x.size))))
+    svmGaussianAccuracy = calculateAccuracy(y, svmGaussianPredictions)
+    print('SVM Gaussian Kernel Accuracy: %.10f' % svmGaussianAccuracy)
 
-    print('Done!')
-
-
+    #Scikit-learn Polynomial Classifier
+    mSvm = svm.SVC(C=lambdaParam ** -1, gamma=1, coef0=1, degree=2, kernel='poly')
+    mSvm.fit(X, y)
+    svmPolynomialPredictions = []
+    for x in X:
+        svmPolynomialPredictions.append(mSvm.predict(x.reshape((1, x.size))))
+    svmPolynomialAccuracy = calculateAccuracy(y, svmPolynomialPredictions)
+    print('SVM Polynomial Kernel Accuracy: %.10f' % svmPolynomialAccuracy)
 
 
 def q1():
