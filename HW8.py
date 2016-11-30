@@ -8,7 +8,56 @@ import matplotlib.patches as mpatches
 
 
 def main():
-    q1()
+    #q1()
+    q2()
+
+
+def q2():
+    data = np.loadtxt('./circledata.csv', delimiter=',')
+    data = np.hstack((np.ones((data.shape[0], 1)), data))
+
+    '''
+    PART A
+    '''
+    #Standard LS regularization solution.
+    lambdaParam = 10**-5
+    X = data[:, :-1]
+    y = data[:, -1]
+    w1 = np.linalg.inv(X.T.dot(X) + lambdaParam*np.eye(X.T.dot(X).shape[0], X.T.dot(X).shape[1])).dot(X.T).dot(y)
+    #Dual LS regularization solution.
+    K = np.dot(X, X.T)
+    alpha = np.linalg.inv(K + lambdaParam*np.eye(K.shape[0], K.shape[1])).dot(y)
+    w2 = X.T.dot(alpha)
+    #Print w values to show they are equal.
+    print('w1:')
+    print(w1)
+    print('w2:')
+    print(w2)
+    #Perform classification for original LS case and record the accuracy.
+    primalPredicted = []
+    for x in X:
+        primalPredicted.append(np.sign(np.dot(x, w1)))
+    originalLSAccuracy = calculateAccuracy(y, primalPredicted)
+
+    #Perform classification for dual LS case and compare results to primal classification results.
+    dualPredicted = []
+    for x in X:
+        sumTerm = 0
+        for i in range(0, X.shape[0]):
+            sumTerm += np.dot(x, X[i])*alpha[i]
+        dualPredicted.append(np.sign(sumTerm))
+    equal = np.allclose(np.array(dualPredicted), np.array(primalPredicted))
+    print('Primal and Dual Classifications equal?: ' + str(equal))
+
+    '''
+    PART B
+    '''
+
+    #C = 1/lambda for scikit-learn SVM
+
+    print('Done!')
+
+
 
 
 def q1():
@@ -25,9 +74,9 @@ def q1():
     #row = (x1, x2, 1, label)
     reducedData = np.hstack((reducedData, np.ones((100, 1)), labels))
 
-    #q1_pa(reducedData)
-    #q1_pb(reducedData)
-    #q1_pc(reducedData)
+    q1_pa(reducedData)
+    q1_pb(reducedData)
+    q1_pc(reducedData)
 
 '''
 wt convergence properties.
@@ -158,7 +207,19 @@ def q1_pa(reducedData):
     plt.legend(handles=[red_patch, blue_patch], loc=2)
     plt.show()
 
+'''
+Calculate straight number of times that two class labels agreed.
+'''
+def calculateAccuracy(yactual, ypredicted):
+	metrics = {}
+	metrics["accuracy"] = 0
 
+	for i in range(0, len(yactual)):
+		if ypredicted[i] == yactual[i]:
+			metrics["accuracy"] += 1
+
+	metrics["accuracy"] = metrics["accuracy"] / float(len(yactual))
+	return metrics["accuracy"]
 
 
 
